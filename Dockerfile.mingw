@@ -16,6 +16,7 @@ MAINTAINER Tatsuhiro Tsujikawa
 
 # Change HOST to x86_64-w64-mingw32 to build 64-bit binary
 ARG HOST=i686-w64-mingw32
+ARG ENABLE_LIBARIA2
 
 # It would be better to use nearest ubuntu archive mirror for faster
 # downloads.
@@ -39,7 +40,7 @@ RUN curl -L -O https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz && \
 
 RUN tar xf gmp-6.3.0.tar.xz && \
     cd gmp-6.3.0 && \
-    ./configure \
+    ./configure $ENABLE_LIBARIA2\
         --disable-shared \
         --enable-static \
         --prefix=/usr/local/$HOST \

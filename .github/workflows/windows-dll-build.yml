@@ -1,0 +1,33 @@
+name: Windows DLL Build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build-windows-dll:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        # host: [x86_64-w64-mingw32, i686-w64-mingw32]
+        host: [x86_64-w64-mingw32]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for Windows DLL
+        run: |
+          docker build --build-arg HOST=${{ matrix.host }} --build-arg ENABLE_LIBARIA2=--enable-libaria2 -t aria2-mingw-dll-${{ matrix.host }} -f ./Dockerfile.mingw .
+
+      - name: Run container to extract DLL
+        run: |
+          docker create --name aria2-dll-container-${{ matrix.host }} aria2-mingw-dll-${{ matrix.host }}
+          docker cp aria2-dll-container-${{ matrix.host }}:/path/to/libaria2.dll ./libaria2-${{ matrix.host }}.dll
+          docker rm aria2-dll-container-${{ matrix.host }}
+
+      - name: Upload Windows DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: aria2-windows-dll-${{ matrix.host }}
+          path: ./libaria2-${{ matrix.host }}.dll

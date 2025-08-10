@@ -1,0 +1,33 @@
+name: Windows Binary Build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        # host: [x86_64-w64-mingw32, i686-w64-mingw32]
+        host: [x86_64-w64-mingw32]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for Windows Binary
+        run: |
+          docker build --build-arg HOST=${{ matrix.host }} -t aria2-mingw-binary-${{ matrix.host }} -f ./Dockerfile.mingw .
+
+      - name: Run container to extract binary
+        run: |
+          docker create --name aria2-container-${{ matrix.host }} aria2-mingw-binary-${{ matrix.host }}
+          docker cp aria2-container-${{ matrix.host }}:/path/to/aria2c.exe ./aria2c-${{ matrix.host }}.exe
+          docker rm aria2-container-${{ matrix.host }}
+
+      - name: Upload Windows Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: aria2-windows-binary-${{ matrix.host }}
+          path: ./aria2c-${{ matrix.host }}.exe
