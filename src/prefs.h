@@ -519,6 +519,8 @@ extern PrefPtr PREF_BT_FORCE_ENCRYPTION;
 extern PrefPtr PREF_BT_ENABLE_HOOK_AFTER_HASH_CHECK;
 // values: true | false
 extern PrefPtr PREF_BT_LOAD_SAVED_METADATA;
+// values: true | false
+extern PrefPtr PREF_BT_REMOVE_TORRENT_DIR;
 
 /**
  * Metalink related preferences

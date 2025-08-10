@@ -256,20 +256,41 @@ void extractFileEntries(const std::shared_ptr<DownloadContext>& ctx,
                            error_code::BITTORRENT_PARSE_ERROR);
       }
 
-      std::vector<std::string> pathelem(pathList->size() + 1);
-      pathelem[0] = utf8Name;
-      auto pathelemOutItr = pathelem.begin();
-      ++pathelemOutItr;
-      for (auto& p : *pathList) {
-        const String* elem = downcast<String>(p);
-        if (elem) {
-          (*pathelemOutItr++) = elem->s();
+      std::vector<std::string> pathelem;
+      bool removeTorrentDir = option->getAsBool(PREF_BT_REMOVE_TORRENT_DIR);
+      
+      if (removeTorrentDir) {
+        // Skip torrent name directory - use only the file path from torrent
+        pathelem.resize(pathList->size());
+        auto pathelemOutItr = pathelem.begin();
+        for (auto& p : *pathList) {
+          const String* elem = downcast<String>(p);
+          if (elem) {
+            (*pathelemOutItr++) = elem->s();
+          }
+          else {
+            throw DL_ABORT_EX2("Path element is not string.",
+                               error_code::BITTORRENT_PARSE_ERROR);
+          }
         }
-        else {
-          throw DL_ABORT_EX2("Path element is not string.",
-                             error_code::BITTORRENT_PARSE_ERROR);
+      } else {
+        // Default behavior - include torrent name as root directory
+        pathelem.resize(pathList->size() + 1);
+        pathelem[0] = utf8Name;
+        auto pathelemOutItr = pathelem.begin();
+        ++pathelemOutItr;
+        for (auto& p : *pathList) {
+          const String* elem = downcast<String>(p);
+          if (elem) {
+            (*pathelemOutItr++) = elem->s();
+          }
+          else {
+            throw DL_ABORT_EX2("Path element is not string.",
+                               error_code::BITTORRENT_PARSE_ERROR);
+          }
         }
       }
+      
       std::string utf8Path = strjoin(
           pathelem.begin(), pathelem.end(), "/",
           std::function<std::string(const std::string&)>(util::encodeNonUtf8));
@@ -341,8 +362,15 @@ void extractFileEntries(const std::shared_ptr<DownloadContext>& ctx,
   }
   ctx->setFileEntries(fileEntries.begin(), fileEntries.end());
   if (torrent->mode == BT_FILE_MODE_MULTI) {
-    ctx->setBasePath(
-        util::applyDir(option->get(PREF_DIR), util::escapePath(utf8Name)));
+    bool removeTorrentDir = option->getAsBool(PREF_BT_REMOVE_TORRENT_DIR);
+    if (removeTorrentDir) {
+      // Set base path directly to the specified directory without torrent name
+      ctx->setBasePath(option->get(PREF_DIR));
+    } else {
+      // Default behavior - include torrent name in base path
+      ctx->setBasePath(
+          util::applyDir(option->get(PREF_DIR), util::escapePath(utf8Name)));
+    }
   }
 }
 } // namespace

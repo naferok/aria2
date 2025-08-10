@@ -1130,4 +1130,13 @@
     "                              successful, then skip downloading metadata from\n" \
     "                              DHT.")
 
+#define TEXT_BT_REMOVE_TORRENT_DIR \
+  _(" --bt-remove-torrent-dir[=true|false]\n" \
+    "                              Remove torrent name directory from file paths.\n" \
+    "                              By default, aria2 creates a directory with the\n" \
+    "                              torrent name and downloads files into it. If this\n" \
+    "                              option is true, files are downloaded directly to\n" \
+    "                              the directory specified by --dir option without\n" \
+    "                              creating the torrent name subdirectory.")
+
 // clang-format on

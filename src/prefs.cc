@@ -568,6 +568,8 @@ PrefPtr PREF_BT_ENABLE_HOOK_AFTER_HASH_CHECK =
     makePref("bt-enable-hook-after-hash-check");
 // values: true | false
 PrefPtr PREF_BT_LOAD_SAVED_METADATA = makePref("bt-load-saved-metadata");
+// values: true | false
+PrefPtr PREF_BT_REMOVE_TORRENT_DIR = makePref("bt-remove-torrent-dir");
 
 /**
  * Metalink related preferences
