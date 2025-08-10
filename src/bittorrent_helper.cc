@@ -212,11 +212,6 @@ void extractFileEntries(const std::shared_ptr<DownloadContext>& ctx,
   int maxConn = option->getAsInt(PREF_MAX_CONNECTION_PER_SERVER);
   std::vector<std::shared_ptr<FileEntry>> fileEntries;
   const List* filesList = downcast<List>(infoDict->get(C_FILES));
-
-  // Check if PREF_DIR ends with a slash
-  std::string dir = option->get(PREF_DIR);
-  bool addRootDir = !dir.empty() && dir.back() != '/';
-  
   if (filesList) {
     fileEntries.reserve(filesList->size());
     int64_t length = 0;
@@ -261,14 +256,14 @@ void extractFileEntries(const std::shared_ptr<DownloadContext>& ctx,
                            error_code::BITTORRENT_PARSE_ERROR);
       }
 
-      std::vector<std::string> pathelem;
-      if (addRootDir) {
-        pathelem.push_back(utf8Name); // Prepend root dir only if no trailing slash
-      }
+      std::vector<std::string> pathelem(pathList->size() + 1);
+      pathelem[0] = utf8Name;
+      auto pathelemOutItr = pathelem.begin();
+      ++pathelemOutItr;
       for (auto& p : *pathList) {
         const String* elem = downcast<String>(p);
         if (elem) {
-          pathelem.push_back(elem->s());
+          (*pathelemOutItr++) = elem->s();
         }
         else {
           throw DL_ABORT_EX2("Path element is not string.",
@@ -345,7 +340,7 @@ void extractFileEntries(const std::shared_ptr<DownloadContext>& ctx,
     fileEntries.push_back(fileEntry);
   }
   ctx->setFileEntries(fileEntries.begin(), fileEntries.end());
-  if (torrent->mode == BT_FILE_MODE_MULTI && addRootDir) {
+  if (torrent->mode == BT_FILE_MODE_MULTI) {
     ctx->setBasePath(
         util::applyDir(option->get(PREF_DIR), util::escapePath(utf8Name)));
   }
