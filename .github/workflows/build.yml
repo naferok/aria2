@@ -6,7 +6,7 @@ jobs:
   build-windows:
     strategy:
       matrix:
-        host: [i686-w64-mingw32, x86_64-w64-mingw32]
+        host: [x86_64-w64-mingw32]
     runs-on: ubuntu-22.04
 
     steps:
